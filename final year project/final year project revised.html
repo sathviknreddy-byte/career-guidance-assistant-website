@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Career Guidance – Final Year Project</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    html, body { font-family: 'Inter', system-ui, sans-serif; }
+    .star { font-size: 1.05rem; line-height: 1; }
+    .star span { margin-right: 1px; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-[#4A47B8] to-[#6E6CC6] text-neutral-900 dark:text-neutral-100">
+  <header class="max-w-5xl mx-auto px-4 pt-8 pb-4">
+    <div class="flex items-center gap-3">
+      <img src="career-guidance-assistant-logo.png" alt="Career Guidance Assistant Logo" class="h-14 w-14 rounded-2xl bg-white object-contain" />
+      <div>
+        <h1 class="text-2xl md:text-3xl font-bold">Career Guidance Assistant</h1>
+        <p class="text-sm text-neutral-600 dark:text-neutral-300">Final-year project • Client-side only</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 pb-16 grid md:grid-cols-2 gap-6">
+    <!-- Form Card -->
+    <section class="bg-white/80 dark:bg-neutral-900/80 backdrop-blur border border-neutral-200/60 dark:border-neutral-800 rounded-2xl shadow-sm p-5 md:p-6">
+      <h2 class="text-lg font-semibold text-neutral-800 dark:text-neutral-100 mb-4">Student Profile</h2>
+      <form id="careerForm" class="space-y-5">
+        <!-- Education -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Highest Education Level <span class="text-xs text-neutral-500">(required)</span></label>
+          <select id="education" class="w-full rounded-xl border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-500" required>
+            <option value="" disabled selected>Select level…</option>
+            <option>High School</option>
+            <option>Diploma</option>
+            <option>Bachelor's</option>
+            <option>Master's</option>
+            <option>PhD</option>
+          </select>
+        </div>
+
+        <!-- Grades -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Grades</label>
+          <div class="grid grid-cols-2 gap-3">
+            <input id="cgpa" type="number" step="0.01" min="0" max="10" placeholder="CGPA (0–10)" class="rounded-xl border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-500" />
+            <input id="percentage" type="number" step="0.1" min="0" max="100" placeholder="% (0–100)" class="rounded-xl border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-500" />
+          </div>
+          <p class="text-xs text-neutral-500 mt-1">Provide either CGPA or Percentage (optional but improves matching).</p>
+        </div>
+
+        <!-- Personality Traits -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Personality Traits</label>
+          <div id="traits" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+        </div>
+
+        <!-- Hobbies -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Hobbies / Activities</label>
+          <input id="hobbies" type="text" placeholder="e.g., coding, robotics, writing, art, gaming, finance, volunteering" class="w-full rounded-xl border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-500" />
+          <p class="text-xs text-neutral-500 mt-1">Comma-separated keywords.</p>
+        </div>
+
+        <!-- Interests -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Field Interests</label>
+          <div id="interests" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-wrap gap-3 pt-2">
+          <button type="submit" class="px-4 py-2.5 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-medium hover:opacity-90">Get Recommendations</button>
+          <button type="button" id="resetBtn" class="px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Results Card -->
+    <section class="bg-white/80 dark:bg-neutral-900/80 backdrop-blur border border-neutral-200/60 dark:border-neutral-800 rounded-2xl shadow-sm p-5 md:p-6">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-lg font-semibold text-neutral-800 dark:text-neutral-100">Recommendations</h2>
+        <button id="printBtn" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border border-neutral-200 dark:border-neutral-800" title="Print or Save as PDF">Print / Save</button>
+      </div>
+      <p class="text-xs text-neutral-500 mb-4">Top matches will appear here after you submit your profile.</p>
+      <div id="results" class="space-y-4"></div>
+    </section>
+  </main>
+
+  <footer class="max-w-5xl mx-auto px-4 pb-10 text-center text-xs text-neutral-600 dark:text-neutral-400">
+    Built for a final-year project • Frontend only
+  </footer>
+
+  <script>
+    // ---------- Config: Traits & Interests UI ----------
+    const TRAITS = [
+      'Analytical','Creative','Leadership','Detail-Oriented','Empathetic','Curious','Problem-Solver','Team Player',
+      'Innovative','Adaptable','Strategic Thinker','Organized','Resilient'
+    ];
+
+    const FIELDS = [
+      'Computer Science','Data Science','Electronics Engineering','Mechanical Engineering','Business','Design','Healthcare','Education',
+      'AI & ML','Cybersecurity','Civil Engineering','Finance','Marketing','Law'
+    ];
+
+    const traitsContainer = document.getElementById('traits');
+    const interestsContainer = document.getElementById('interests');
+
+    function renderChips(container, items, name) {
+      container.innerHTML = items.map(item => `
+        <label class="chip gap-2 cursor-pointer">
+          <input type="checkbox" name="${name}" value="${item}" class="accent-neutral-900 dark:accent-white">
+          <span>${item}</span>
+        </label>`).join('');
+    }
+
+    renderChips(traitsContainer, TRAITS, 'trait');
+    renderChips(interestsContainer, FIELDS, 'interest');
+
+    // ---------- Careers (added more) ----------
+    const CAREERS = [
+      { id:'software_engineer', title:'Software Engineer', fields:['Computer Science'], minEdu:["Diploma","Bachelor's","Master's","PhD"], difficulty:3, salary:'₹5–12 LPA', coreSkill:'Data Structures & Algorithms', longevity:'High (10+ years)', automationRisk:'Medium', traitMatches:['Analytical','Problem-Solver','Detail-Oriented'], hobbyHints:['coding','gaming','hackathons','open source'] },
+      { id:'data_scientist', title:'Data Scientist', fields:['Data Science','Computer Science','Business'], minEdu:["Bachelor's","Master's","PhD"], difficulty:4, salary:'₹7–15 LPA', coreSkill:'Python & Machine Learning', longevity:'High (10+ years)', automationRisk:'Low', traitMatches:['Analytical','Curious','Detail-Oriented'], hobbyHints:['kaggle','statistics','python','math'] },
+      { id:'cybersecurity', title:'Cybersecurity Analyst', fields:['Cybersecurity','Computer Science'], minEdu:["Bachelor's","Master's","PhD"], difficulty:4, salary:'₹6–13 LPA', coreSkill:'Network Security & Ethical Hacking', longevity:'High (10+ years)', automationRisk:'Low', traitMatches:['Analytical','Problem-Solver','Resilient'], hobbyHints:['ctf','hacking','security','forensics'] },
+      { id:'civil_engineer', title:'Civil Engineer', fields:['Civil Engineering'], minEdu:["Diploma","Bachelor's","Master's","PhD"], difficulty:3, salary:'₹4–9 LPA', coreSkill:'Structural Design & Project Management', longevity:'High (10+ years)', automationRisk:'Medium', traitMatches:['Detail-Oriented','Organized','Team Player'], hobbyHints:['construction','design','surveying'] },
+      { id:'financial_analyst', title:'Financial Analyst', fields:['Finance','Business'], minEdu:["Bachelor's","Master's","PhD"], difficulty:3, salary:'₹5–11 LPA', coreSkill:'Excel & Financial Modelling', longevity:'High (10+ years)', automationRisk:'Medium', traitMatches:['Analytical','Strategic Thinker','Detail-Oriented'], hobbyHints:['stocks','trading','investments'] },
+      { id:'marketing_manager', title:'Marketing Manager', fields:['Marketing','Business'], minEdu:["Bachelor's","Master's"], difficulty:3, salary:'₹6–14 LPA', coreSkill:'Digital Marketing & Brand Strategy', longevity:'High (10+ years)', automationRisk:'Medium', traitMatches:['Creative','Leadership','Adaptable'], hobbyHints:['social media','advertising','branding'] },
+      { id:'lawyer', title:'Lawyer', fields:['Law'], minEdu:["Bachelor's","Master's"], difficulty:5, salary:'₹8–20 LPA', coreSkill:'Legal Research & Advocacy', longevity:'High (10+ years)', automationRisk:'Low', traitMatches:['Analytical','Strategic Thinker','Organized'], hobbyHints:['debating','reading','moot court'] },
+      { id:'ai_researcher', title:'AI Researcher', fields:['AI & ML','Data Science','Computer Science'], minEdu:["Master's","PhD"], difficulty:5, salary:'₹10–25 LPA', coreSkill:'Deep Learning & Research', longevity:'High (10+ years)', automationRisk:'Low', traitMatches:['Innovative','Curious','Analytical'], hobbyHints:['ai','research','machine learning','neural nets'] }
+    ];
+
+    // ---------- Scoring Logic ----------
+    function gradeTier({ cgpa, percentage }) {
+      if (!isFinite(cgpa) && !isFinite(percentage)) return 'unknown';
+      const norm = isFinite(cgpa) ? cgpa/10 : (isFinite(percentage) ? percentage/100 : 0);
+      if (norm >= 0.85) return 'high';
+      if (norm >= 0.7) return 'mid';
+      return 'low';
+    }
+
+    function scoreCareer(career, input) {
+      let score = 0;
+      if (career.fields.some(f => input.interests.includes(f))) score += 40;
+      if (career.minEdu.includes(input.education)) score += 15;
+      score += career.traitMatches.filter(t => input.traits.includes(t)).length * 5;
+      const hobbyString = input.hobbies.join(' ');
+      score += career.hobbyHints.filter(h => hobbyString.includes(h)).length * 3;
+      const tier = gradeTier(input);
+      if (tier==='high') score += (career.difficulty>=4?8:4);
+      if (tier==='mid') score += (career.difficulty<=4?5:2);
+      if (tier==='low' && career.difficulty>=4) score -= 6;
+      if (!career.minEdu.includes(input.education)) score -= 5;
+      return Math.max(0,score);
+    }
+
+    // ---------- Rendering Helpers ----------
+    function stars(n) {
+      const colors = ['green','limegreen','orange','orangered','red'];
+      let s = '';
+      for (let i=1;i<=5;i++) {
+        if (i<=n) s += `<span style="color:${colors[i-1]}">★</span>`;
+        else s += `<span style="color:lightgray">☆</span>`;
+      }
+      return `<span class="star">${s}</span>`;
+    }
+
+    function rationale(career, input) {
+      const reasons = [];
+      if (career.fields.some(f => input.interests.includes(f))) reasons.push('Matches your field interests');
+      const overlap = career.traitMatches.filter(t => input.traits.includes(t));
+      if (overlap.length) reasons.push(`Aligns with your traits: ${overlap.join(', ')}`);
+      if (career.hobbyHints.some(h => input.hobbies.join(' ').includes(h))) reasons.push('Related to your hobbies');
+      if (career.minEdu.includes(input.education)) reasons.push('Suitable for your education level');
+      if (gradeTier(input)==='high') reasons.push('Your strong grades support this path');
+      if (!reasons.length) reasons.push('General fit based on your profile');
+      return reasons;
+    }
+
+    function renderResultCard(c) {
+      return `
+        <div class="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white/60 dark:bg-neutral-900/60">
+          <div class="flex items-center justify-between gap-3">
+            <h3 class="text-base md:text-lg font-semibold">${c.title}</h3>
+            <span class="chip">${c.fields.join(' • ')}</span>
+          </div>
+          <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            <div class="flex items-center gap-2"><span class="chip">Difficulty</span> ${stars(c.difficulty)}</div>
+            <div class="flex items-center gap-2"><span class="chip">Salary</span> <span>${c.salary}</span></div>
+            <div class="flex items-center gap-2"><span class="chip">Core Skill</span> <span>${c.coreSkill}</span></div>
+            <div class="flex items-center gap-2"><span class="chip">Longevity</span> <span>${c.longevity}</span></div>
+            <div class="flex items-center gap-2"><span class="chip">Automation Risk</span> <span>${c.automationRisk}</span></div>
+          </div>
+          ${c.reasons?.length ? `<ul class="mt-3 list-disc pl-5 text-sm text-neutral-700 dark:text-neutral-300">${c.reasons.map(r => `<li>${r}</li>`).join('')}</ul>` : ''}
+        </div>`;
+    }
+
+    // ---------- Form Handling ----------
+    const form = document.getElementById('careerForm');
+    const resultsEl = document.getElementById('results');
+    const resetBtn = document.getElementById('resetBtn');
+    const printBtn = document.getElementById('printBtn');
+
+    form.addEventListener('submit',(e)=>{
+      e.preventDefault();
+      const education=document.getElementById('education').value;
+      const cgpaVal=parseFloat(document.getElementById('cgpa').value);
+      const pctVal=parseFloat(document.getElementById('percentage').value);
+      const traits=[...document.querySelectorAll('input[name="trait"]:checked')].map(i=>i.value);
+      const interests=[...document.querySelectorAll('input[name="interest"]:checked')].map(i=>i.value);
+      const hobbies=document.getElementById('hobbies').value.split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
+      if(!education){alert('Please select your highest education level.');return;}
+      if(!interests.length && !confirm('No field interests selected. Proceed anyway?')) return;
+      const input={education,cgpa:cgpaVal,percentage:pctVal,traits,interests,hobbies};
+      const ranked=CAREERS.map(c=>({...c,score:scoreCareer(c,input),reasons:rationale(c,input)})).sort((a,b)=>b.score-a.score).slice(0,5);
+      resultsEl.innerHTML=ranked.length?ranked.map(renderResultCard).join(''):'<p class="text-sm text-neutral-600 dark:text-neutral-300">No matches found.</p>'
+    });
+
+    resetBtn.addEventListener('click',()=>{
+      form.reset();
+      traitsContainer.querySelectorAll('input').forEach(i=>i.checked=false);
+      interestsContainer.querySelectorAll('input').forEach(i=>i.checked=false);
+      resultsEl.innerHTML='';
+    });
+
+    printBtn.addEventListener('click',()=>{
+      window.print();
+    });
+  </script>
+</body>
+</html>
+
